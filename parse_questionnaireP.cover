@@ -1,0 +1,173 @@
+       #/usr/bin/python
+       
+    1: import sys, csv, re
+    1: from operator import itemgetter
+       
+       
+    1: def find_columns(file):
+       # answer possibilities are equal to regex [A-Z][0-9][0-9]?\.
+           
+    3:     columns = []
+           
+    3:     readfile = file.read()
+ 2730:     for i in re.findall(r'[A-Z][0-9][0-9]?\.', readfile):
+ 2727:         columns.append(i)
+       
+       #    print columns
+           
+    3:     return sorted(set(columns))
+       
+    1: def output(list):
+       
+    1:     lastQ = ''
+    1:     edgelist = []
+       
+  806:     for row in list:
+  805:         print row
+  805:         question = row[0]
+  805:         UI = row[1]
+       
+  805:         if lastQ == '':
+    1:             lastQ = question
+    1:             edgelist.append(UI)
+       
+  804:         elif lastQ == question:
+  634:             edgelist.append(UI)
+       
+  170:         elif lastQ != question:
+  170:             if len(edgelist) < 1:
+                       pass
+                   else:
+  800:                 while len(edgelist) > 1:
+  630:                     edges.writerow(edgelist)
+  630:                     del edgelist[0]
+       
+  170:             lastQ = question
+  170:             edgelist = []
+  170:             edgelist.append(UI)
+       
+           # print the last line
+    5:     while len(edgelist) > 1:
+    4:         edges.writerow(edgelist)
+    4:         del edgelist[0]
+       
+    1: networks = open(sys.argv[2]).read()
+    1: networks = networks.split('\n')
+       
+    4: for row in networks:
+       
+    3:     print row
+    3:     l = row.split(' ')    
+       
+    3:     nname = l[0]
+    3:     target = l[1:]
+    3:     print target
+       
+           # read inputfile as csv
+    3:     inputfile = open(sys.argv[1])
+    3:     reader = csv.reader(inputfile, delimiter = ',', quotechar = '"')
+       
+           # create attributes csv
+    3:     attributes = csv.writer(open('attributes-'+nname+'.csv','w'), delimiter = ',', quotechar = '"')
+    3:     attributes.writerow(["ID", "name", "organisation", "age", "gender", "based in", "born in", "field","track"])
+       
+    3:     id = 0
+    3:     IDs = []
+       
+    3:     answers = []
+       
+    3:     columns_list = find_columns(inputfile)
+       
+    3:     inputfile.seek(0)
+   42:     for row in reader:
+       
+   39:         if id == 0:
+    3:             header = row
+    3:             id +=1
+               else:
+               # create unique indentifiers
+   36:             ID = 'BG'+str(id).zfill(3)
+   36:             IDs.append(ID)
+   36:             id += 1
+       
+   36:             name = row [1]
+   36:             organisation = row[2] 
+   36:             age = row[3]
+   36:             gender = row[4]
+   36:             based = row[5]
+   36:             born = row[6]
+   36:             field = row[7]
+   36:             track = row[9]        
+       
+           #   print ID,age,gender,track
+       
+   36:             attributes.writerow([ID, name, organisation, age, gender, based, born, field, track])
+       
+           # create edges csv
+               
+ 6336:             for i in columns_list:
+ 6300:                 if i in ','.join(row):
+ 2415:                     answers.extend([[i,ID]])
+       
+       
+           #print answers
+       
+    1: edges = csv.writer(open('edges-'+nname+'.csv','w'), delimiter = ',')
+    1: sorted = sorted(answers, key=itemgetter(0))
+       
+    1: output(sorted)
+    1: print "%s added" % len(sorted)
+       
+       #   # read most popular_answers.csv
+       #    popular = csv.reader(open('popular_answers.csv'), delimiter = ',', quotechar = '"')
+       #
+       #
+       #    filtered = [] # list created by a filter
+       #
+       #    filter = raw_input("Specify answers you want to filter out: \n questions (A-Z) or answers (B09) separated with space \n answers with occurence below or above a certain number (<50) [max %s] \n or enter if you want to use all the answers:" % len(IDs))
+       #
+       #
+       #    if filter == '':
+       #        output(sorted)
+       #
+       #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(sorted)
+       #
+       #    elif '<' in filter or '>' in filter:
+       #        
+       #        filters = []
+       #        
+       #        for row in popular:
+       #     
+       #            numAns = int(row[0])
+       #            code = row[1]
+       #
+       #            if '<' in filter:
+       #                f = filter.lstrip('<')
+       #                if numAns <= int(f):
+       #                    filters.append(code)
+       #
+       #            elif '>' in filter:
+       #                f = filter.lstrip('>')
+       #                if numAns >= int(f):
+       #                    filters.append(code)
+       #
+       #        print filters
+       #        for a in sorted:
+       #            for f in filters:
+       #                if f in a[0]:
+       #                    filtered.append(a)
+       #                    
+       #        output(filtered)
+       #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(filtered)
+       #
+       #            
+       #
+       #    else:
+       #        filters = filter.split(' ') # list created by user
+       #        for a in sorted:
+       #            for f in filters:
+       #                if f in a[0]:
+       #                    filtered.append(a)
+       #                    
+       #        output(filtered)
+       #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(filtered)

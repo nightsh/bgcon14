@@ -1,21 +1,24 @@
 #/usr/bin/python
 
-import sys, csv, re
+import sys
+import csv
+import re
 from operator import itemgetter
 
 
 def find_columns(file):
 # answer possibilities are equal to regex [A-Z][0-9][0-9]?\.
-    
+
     columns = []
-    
+
     readfile = file.read()
     for i in re.findall(r'[A-Z][0-9][0-9]?\.', readfile):
         columns.append(i)
 
-#    print columns
-    
+    file.seek(0)
+
     return sorted(set(columns))
+
 
 def output(list):
 
@@ -51,14 +54,14 @@ def output(list):
         edges.writerow(edgelist)
         del edgelist[0]
 
-networks = open(sys.argv[2]).read()
-networks = filter(None, networks.split('\n'))
+with open(sys.argv[2]) as f:
+    networks = f.readlines()
 print networks
 
 for row in networks:
 
-    print row
-    l = row.split(' ')    
+    print "row:" + row
+    l = row.strip().split(' ')
 
     nname = l[0]
     target = l[1:]
@@ -66,12 +69,12 @@ for row in networks:
 
     # read inputfile as csv
     inputfile = open(sys.argv[1])
-    reader = csv.reader(inputfile, delimiter = ',', quotechar = '"')
+    reader = csv.reader(inputfile, delimiter=',', quotechar='"')
 
     # create attributes csv
-    aname = 'attributes-'+nname+'.csv'
-    attributes = csv.writer(open(aname,'w'), delimiter = ',', quotechar = '"')
-    attributes.writerow(["ID", "name", "organisation", "age", "gender", "based in", "born in", "field","track"])
+    aname = 'attributes-' + nname + '.csv'
+    attributes = csv.writer(open(aname, 'w'), delimiter=',', quotechar='"')
+    attributes.writerow(["ID", "name", "organisation", "age", "gender", "based in", "born in", "field", "track"])
 
     id = 0
     IDs = []
@@ -85,40 +88,41 @@ for row in networks:
 
         if id == 0:
             header = row
-            id +=1
+            id += 1
         else:
         # create unique indentifiers
-            ID = 'BG'+str(id).zfill(3)
+            ID = 'BG' + str(id).zfill(3)
             IDs.append(ID)
             id += 1
 
-            name = row [1]
-            organisation = row[2] 
+            name = row[1]
+            organisation = row[2]
             age = row[3]
             gender = row[4]
             based = row[5]
             born = row[6]
             field = row[7]
-            track = row[9]        
+            track = row[9]
 
     #   print ID,age,gender,track
 
             attributes.writerow([ID, name, organisation, age, gender, based, born, field, track])
 
     # create edges csv
-        
+
             for i in columns_list:
                 if i in ','.join(row):
-                    answers.extend([[i,ID]])
-
+                    answers.extend([[i, ID]])
 
     #print answers
-    ename = 'edges-'+nname+'.csv'
-    edges = csv.writer(open(ename,'w'), delimiter = ',')
+    ename = 'edges-' + nname + '.csv'
+    edges = csv.writer(open(ename, 'w'), delimiter=',')
     sorted = sorted(answers, key=itemgetter(0))
 
     output(sorted)
     print "%s added" % len(sorted)
+
+    inputfile.close()
 
 #   # read most popular_answers.csv
 #    popular = csv.reader(open('popular_answers.csv'), delimiter = ',', quotechar = '"')
@@ -135,11 +139,11 @@ for row in networks:
 #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(sorted)
 #
 #    elif '<' in filter or '>' in filter:
-#        
+#
 #        filters = []
-#        
+#
 #        for row in popular:
-#     
+#
 #            numAns = int(row[0])
 #            code = row[1]
 #
@@ -158,11 +162,11 @@ for row in networks:
 #            for f in filters:
 #                if f in a[0]:
 #                    filtered.append(a)
-#                    
+#
 #        output(filtered)
 #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(filtered)
 #
-#            
+#
 #
 #    else:
 #        filters = filter.split(' ') # list created by user
@@ -170,6 +174,6 @@ for row in networks:
 #            for f in filters:
 #                if f in a[0]:
 #                    filtered.append(a)
-#                    
+#
 #        output(filtered)
 #        print "%s responses added to 'attributes.csv' and 'edges.csv'" % len(filtered)
